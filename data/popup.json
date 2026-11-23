@@ -1,0 +1,14 @@
+{
+  "enabled": false,
+  "title": "",
+  "body": "",
+  "imageUrl": "",
+  "imageAlt": "",
+  "ctaEnabled": false,
+  "ctaLabel": "",
+  "ctaUrl": "",
+  "expiresAt": null,
+  "frequency": "session",
+  "version": 0,
+  "updatedAt": null
+}

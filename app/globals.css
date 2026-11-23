@@ -1,0 +1,305 @@
+@import "tailwindcss";
+
+/*
+  Design tokens. Raw gilt (#b8892d) is decorative only (rules, borders): it fails
+  contrast as text on vellum. Use gilt-deep for gold text, gilt-light on dark bands.
+  Every text/background pair used on the site is AA or better (most AAA).
+*/
+@theme {
+  --color-vellum: #f6eedb;
+  --color-vellum-deep: #eadfc4;
+  --color-paper: #fcf8ee;
+  --color-gilt: #b8892d;
+  --color-gilt-deep: #7b5a17;
+  --color-gilt-light: #e2c77f;
+  --color-oxblood: #5b1522;
+  --color-oxblood-deep: #3f0d17;
+  --color-lapis: #14295e;
+  --color-lapis-deep: #0d1d45;
+  --color-ink: #2a1e1b;
+  --color-ink-soft: #5a4a43;
+  --color-danger: #8f1d1d;
+  --color-ok: #1d5c36;
+
+  --font-display: "Alegreya Variable", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Atkinson Hyperlegible Next Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-h1: clamp(2.5rem, 1.55rem + 4.1vw, 4.75rem);
+  --text-h2: clamp(1.9rem, 1.45rem + 2vw, 2.85rem);
+}
+
+@layer base {
+  :root {
+    --focus: var(--color-lapis);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-vellum);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.7;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-oxblood);
+    font-weight: 700;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.012em;
+  }
+  h2 {
+    font-size: var(--text-h2);
+    letter-spacing: -0.008em;
+  }
+  h3 {
+    font-size: 1.6rem;
+  }
+  h4 {
+    font-size: 1.3rem;
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-gilt-light);
+    color: var(--color-oxblood-deep);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Dark bands switch the focus ring to a light colour. */
+  .on-dark {
+    --focus: var(--color-gilt-light);
+  }
+  .on-dark :is(h1, h2, h3, h4) {
+    color: var(--color-vellum);
+  }
+
+  .btn {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.6rem;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .btn[disabled],
+  .btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* Manuscript-style inner gilt line */
+  .btn-primary {
+    background-color: var(--color-oxblood);
+    color: var(--color-vellum);
+    border-color: var(--color-oxblood);
+    box-shadow:
+      inset 0 0 0 3px var(--color-oxblood),
+      inset 0 0 0 4px var(--color-gilt-light);
+  }
+  .btn-primary:hover:not([disabled]) {
+    background-color: var(--color-oxblood-deep);
+    border-color: var(--color-oxblood-deep);
+    box-shadow:
+      inset 0 0 0 3px var(--color-oxblood-deep),
+      inset 0 0 0 4px var(--color-gilt-light);
+  }
+
+  .btn-light {
+    background-color: var(--color-gilt-light);
+    color: var(--color-oxblood-deep);
+    border-color: var(--color-gilt-light);
+  }
+  .btn-light:hover:not([disabled]) {
+    background-color: var(--color-vellum);
+    border-color: var(--color-vellum);
+  }
+
+  .btn-outline {
+    background-color: transparent;
+    color: var(--color-oxblood);
+    border-color: var(--color-oxblood);
+  }
+  .btn-outline:hover:not([disabled]) {
+    background-color: var(--color-oxblood);
+    color: var(--color-vellum);
+  }
+  .on-dark .btn-outline {
+    color: var(--color-vellum);
+    border-color: var(--color-gilt-light);
+  }
+  .on-dark .btn-outline:hover:not([disabled]) {
+    background-color: var(--color-gilt-light);
+    color: var(--color-oxblood-deep);
+  }
+
+  /* Quotations from Scripture: the gilt rule marks "this is quoted text". */
+  .scripture {
+    border-left: 3px solid var(--color-gilt);
+    padding-left: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+  .scripture cite {
+    display: block;
+    margin-top: 0.35rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-style: normal;
+    color: var(--color-ink-soft);
+  }
+  .on-dark .scripture {
+    color: var(--color-vellum);
+  }
+  .on-dark .scripture cite {
+    color: var(--color-gilt-light);
+  }
+
+  /* Apse arch: the one signature shape on the site (hero photo). */
+  .arch-frame {
+    border: 1px solid var(--color-gilt);
+    border-top-left-radius: 9999px;
+    border-top-right-radius: 9999px;
+    padding: 0.55rem;
+    background: var(--color-paper);
+  }
+  .arch {
+    overflow: hidden;
+    border-top-left-radius: 9999px;
+    border-top-right-radius: 9999px;
+    background: var(--color-vellum-deep);
+  }
+
+  /* Long-form reading text */
+  .prose-church > * + * {
+    margin-top: 1.15em;
+  }
+  .prose-church {
+    max-width: 66ch;
+  }
+  .prose-church a,
+  .link {
+    color: var(--color-lapis);
+    text-decoration: underline;
+  }
+  .prose-church a:hover,
+  .link:hover {
+    color: var(--color-oxblood);
+  }
+  .on-dark .link {
+    color: var(--color-gilt-light);
+  }
+  .on-dark .link:hover {
+    color: var(--color-vellum);
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+  .field {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--color-ink-soft);
+    border-radius: 2px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font: inherit;
+    line-height: 1.4;
+  }
+  .field::placeholder {
+    color: #7a6a62;
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 1px var(--color-danger);
+  }
+  .field-error {
+    margin-top: 0.3rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--color-danger);
+  }
+}
+
+/* The popup dialog is the only motion on the site that plays without a click. */
+@keyframes popup-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+dialog.popup[open] {
+  animation: popup-in 0.28s ease-out;
+}
+dialog::backdrop {
+  background: rgb(26 12 14 / 0.62);
+}
+
+/* Keep the page from scrolling behind an open popup or photo viewer. */
+body:has(dialog[open]) {
+  overflow: hidden;
+}
