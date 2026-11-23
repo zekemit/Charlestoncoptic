@@ -31,8 +31,16 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files: real values never get committed; the documented template does
+.env
+.env.local
+.env.*.local
 .env*
 !.env.example
+
+# keys and certificates
+*.pem
+*.key
+*.p12
 
 # vercel
 .vercel

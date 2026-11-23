@@ -29,6 +29,9 @@ export function json(body: unknown, status = 200, extra: Record<string, string> 
 
 /** Reads a JSON body with a hard size cap. Returns undefined when invalid or too large. */
 export async function readJson(request: Request, maxBytes = 32_000): Promise<unknown | undefined> {
+  // Browsers can only send application/json cross-site after a CORS preflight, so requiring it
+  // closes the "simple request" CSRF route as defence in depth (cookies are also SameSite=Strict).
+  if (!/^application\/json\b/i.test(request.headers.get("content-type") ?? "")) return undefined;
   const declared = Number(request.headers.get("content-length"));
   if (declared && declared > maxBytes) return undefined;
   try {

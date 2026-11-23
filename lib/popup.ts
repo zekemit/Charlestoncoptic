@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { isSafeHref } from "@/lib/rich-text";
 
+// Zod normally probes for eval ("new Function") to compile faster validators. A Content-Security-Policy
+// without 'unsafe-eval' correctly blocks that probe and reports a violation, so turn the probe off.
+z.config({ jitless: true });
+
 export const FREQUENCIES = ["session", "always"] as const;
 export type Frequency = (typeof FREQUENCIES)[number];
 
@@ -14,7 +18,8 @@ export function isSafeImageUrl(value: string): boolean {
   if (v.startsWith("/")) return !v.startsWith("//") && !v.includes("\\");
   try {
     const u = new URL(v);
-    return u.protocol === "http:" || u.protocol === "https:";
+    // https only: plain http images are blocked as mixed content on an https site anyway.
+    return u.protocol === "https:";
   } catch {
     return false;
   }

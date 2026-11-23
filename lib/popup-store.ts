@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import seed from "@/data/popup.json";
 import { type PopupConfig, type PopupInput, normalizePopup } from "@/lib/popup";
+import { redisCommand, redisConfig } from "@/lib/redis";
 
 // Where the live popup settings are stored:
 //  1. Upstash Redis (Vercel Marketplace) when its REST env vars exist. Required in production on Vercel.
@@ -21,36 +22,16 @@ export class StorageNotConfiguredError extends Error {
   }
 }
 
-export function redisConfig(env: Env = process.env): { url: string; token: string } | null {
-  const url = (env.UPSTASH_REDIS_REST_URL || env.KV_REST_API_URL)?.trim();
-  const token = (env.UPSTASH_REDIS_REST_TOKEN || env.KV_REST_API_TOKEN)?.trim();
-  return url && token ? { url: url.replace(/\/$/, ""), token } : null;
-}
+export { redisConfig };
 
 export function storageMode(env: Env = process.env): StorageMode {
   if (redisConfig(env)) return "redis";
   return env.VERCEL ? "unconfigured" : "file";
 }
 
-async function redis(cmd: (string | number)[]): Promise<unknown> {
-  const cfg = redisConfig()!;
-  const res = await fetch(cfg.url, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${cfg.token}`, "Content-Type": "application/json" },
-    body: JSON.stringify(cmd),
-    cache: "no-store",
-    signal: AbortSignal.timeout(8000),
-  });
-  const data = (await res.json().catch(() => null)) as { result?: unknown; error?: string } | null;
-  if (!res.ok || !data || data.error) {
-    throw new Error(`Upstash ${cmd[0]} failed: ${data?.error ?? res.status}`);
-  }
-  return data.result;
-}
-
 async function read(mode: StorageMode): Promise<PopupConfig> {
   if (mode === "redis") {
-    const raw = await redis(["GET", KEY]);
+    const raw = await redisCommand(["GET", KEY]);
     return typeof raw === "string" ? normalizePopup(JSON.parse(raw)) : normalizePopup(seed);
   }
   if (mode === "file") {
@@ -89,7 +70,7 @@ export async function savePopup(input: PopupInput): Promise<PopupConfig> {
   };
 
   if (mode === "redis") {
-    await redis(["SET", KEY, JSON.stringify(next)]);
+    await redisCommand(["SET", KEY, JSON.stringify(next)]);
   } else {
     await fs.mkdir(path.dirname(FILE), { recursive: true });
     await fs.writeFile(FILE, JSON.stringify(next, null, 2) + "\n");

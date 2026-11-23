@@ -64,6 +64,10 @@ describe("popupSchema", () => {
     },
   );
 
+  it("rejects plain-http images (blocked as mixed content on an https site)", () => {
+    expect(popupSchema.safeParse({ ...valid, imageUrl: "http://cdn.example.org/flyer.png" }).success).toBe(false);
+  });
+
   it("accepts site-relative and https images", () => {
     expect(popupSchema.safeParse({ ...valid, imageUrl: "/images/site/hero-church.jpg" }).success).toBe(true);
     expect(popupSchema.safeParse({ ...valid, imageUrl: "https://cdn.example.org/flyer.png" }).success).toBe(true);

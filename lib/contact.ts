@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+// Zod normally probes for eval ("new Function") to compile faster validators. A Content-Security-Policy
+// without 'unsafe-eval' correctly blocks that probe and reports a violation, so turn the probe off.
+z.config({ jitless: true });
+
 export const INQUIRY_TYPES = [
   "General question",
   "Planning a visit",

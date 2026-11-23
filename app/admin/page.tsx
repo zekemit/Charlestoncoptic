@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/admin/LoginForm";
 import { PopupEditor } from "@/components/admin/PopupEditor";
 import { isAdmin } from "@/lib/auth";
 import { getPopup, storageMode } from "@/lib/popup-store";
-import { isAdminConfigured } from "@/lib/session-token";
+import { MIN_ADMIN_PASSWORD_LENGTH, isAdminConfigured, isAdminPasswordTooShort } from "@/lib/session-token";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -31,6 +31,18 @@ async function AdminGate() {
   // Everything here must run per request: the password and storage settings are read from the
   // live environment, never baked into the prerendered shell at build time.
   await connection();
+
+  if (isAdminPasswordTooShort()) {
+    return (
+      <div className="mx-auto w-full max-w-2xl px-5 py-16 sm:py-24">
+        <h1 className="text-4xl">Admin password is too short</h1>
+        <p className="mt-4 text-lg">
+          For safety, sign-in is switched off until <code>ADMIN_PASSWORD</code> has at least {MIN_ADMIN_PASSWORD_LENGTH}{" "}
+          characters. Set a longer passphrase in the hosting settings and redeploy.
+        </p>
+      </div>
+    );
+  }
 
   if (!isAdminConfigured()) {
     return (

@@ -115,7 +115,7 @@ describe("Upstash mode", () => {
       ),
     );
     const { savePopup } = await import("@/lib/popup-store");
-    await expect(savePopup(input)).rejects.toThrow(/Upstash SET failed/);
+    await expect(savePopup(input)).rejects.toThrow(/Upstash.*failed/);
   });
 });
 

@@ -1,5 +1,5 @@
 import { startAdminSession } from "@/lib/auth";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { clientIp, isSameOrigin, json, readJson } from "@/lib/request";
 import { isAdminConfigured, verifyPassword } from "@/lib/session-token";
 
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const limit = rateLimit(`login:${clientIp(request)}`, 10, 15 * 60 * 1000);
+  const limit = await checkRateLimit(`login:${clientIp(request)}`, 10, 15 * 60 * 1000);
   if (!limit.ok) {
     return json({ ok: false, message: "Too many sign-in attempts. Please wait a few minutes and try again." }, 429, {
       "Retry-After": String(limit.retryAfterSeconds),

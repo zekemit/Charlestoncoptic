@@ -87,10 +87,20 @@ describe("request helpers", () => {
 
   it("caps request body size and rejects bad JSON", async () => {
     const post = (body: string, extra: Record<string, string> = {}) =>
-      new Request("https://x.test/api", { method: "POST", body, headers: extra });
+      new Request("https://x.test/api", { method: "POST", body, headers: { "content-type": "application/json", ...extra } });
     expect(await readJson(post('{"a":1}'))).toEqual({ a: 1 });
+    expect(await readJson(post('{"a":1}', { "content-type": "application/json; charset=utf-8" }))).toEqual({ a: 1 });
     expect(await readJson(post("{nope"))).toBeUndefined();
     expect(await readJson(post("x".repeat(100)), 50)).toBeUndefined();
     expect(await readJson(post("{}", { "content-length": "999999" }), 1000)).toBeUndefined();
+  });
+
+  it("refuses non-JSON content types, so a cross-site form post can't reach the handlers", async () => {
+    const withType = (type?: string) =>
+      new Request("https://x.test/api", { method: "POST", body: '{"a":1}', headers: type ? { "content-type": type } : {} });
+    expect(await readJson(withType("text/plain"))).toBeUndefined();
+    expect(await readJson(withType("application/x-www-form-urlencoded"))).toBeUndefined();
+    expect(await readJson(withType("multipart/form-data; boundary=x"))).toBeUndefined();
+    expect(await readJson(withType())).toBeUndefined();
   });
 });

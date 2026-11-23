@@ -154,8 +154,11 @@ CONTENT_NOTES.md     What changed, and copy the church should review
 **Security notes**
 - Admin session: signed (HMAC-SHA256) cookie, `HttpOnly`, `SameSite=Strict`, `Secure` in production, 8 hours. Password compared in constant time. Cross-origin writes are rejected.
 - Popup body supports only bold, italic, links and bullets and is rendered as React elements, never raw HTML. Links must be `http(s)`, `mailto:`, `tel:` or site-relative; `javascript:` and `data:` are refused on both client and server.
-- Contact form: server-side validation, honeypot field, minimum-fill-time check, per-IP rate limit (5 per 10 minutes), and header-injection guards. The limiter is in-memory, so on serverless it is a best-effort brake per instance. For hard limits, add a rate-limit rule in Vercel Firewall for `/api/contact` and `/api/admin/login`.
-- Security headers are set in `next.config.ts`.
+- Contact form: server-side validation, honeypot field, minimum-fill-time check, per-IP rate limit (5 per 10 minutes), and header-injection guards. Login is limited to 10 attempts per 15 minutes per IP. Both limits are counted in Upstash Redis, so they hold across every serverless instance (IP addresses are hashed before storage); without Redis (local dev) they fall back to per-process memory.
+- `ADMIN_PASSWORD` must be at least 12 characters or sign-in stays off. Set `SESSION_SECRET` in production so session cookies are signed with a key that isn't derived from the password.
+- Every JSON endpoint requires `Content-Type: application/json` and a same-origin `Origin` header.
+- Headers set in `next.config.ts`: Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy. Browser source maps are off.
+- `SECURITY_AUDIT.md` records the last security review: findings, fixes, and accepted risks.
 
 **Known limits**
 - The popup appears on the homepage only (as specified), not on other pages.

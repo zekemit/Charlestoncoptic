@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  MIN_ADMIN_PASSWORD_LENGTH,
   SESSION_SECONDS,
+  isAdminPasswordTooShort,
   createSessionToken,
   isAdminConfigured,
   verifyPassword,
@@ -24,6 +26,32 @@ describe("admin password", () => {
     expect(isAdminConfigured({})).toBe(false);
     expect(isAdminConfigured({ ADMIN_PASSWORD: "" })).toBe(false);
     expect(isAdminConfigured(ENV)).toBe(true);
+  });
+});
+
+describe("admin password policy", () => {
+  it("refuses to enable sign-in with a short password", () => {
+    const short = { ADMIN_PASSWORD: "x".repeat(MIN_ADMIN_PASSWORD_LENGTH - 1) };
+    expect(isAdminConfigured(short)).toBe(false);
+    expect(isAdminPasswordTooShort(short)).toBe(true);
+    expect(verifyPassword(short.ADMIN_PASSWORD, short)).toBe(false);
+    expect(createSessionToken(short, NOW)).toBeNull();
+  });
+
+  it("accepts a password at the minimum length", () => {
+    const ok = { ADMIN_PASSWORD: "x".repeat(MIN_ADMIN_PASSWORD_LENGTH) };
+    expect(isAdminConfigured(ok)).toBe(true);
+    expect(isAdminPasswordTooShort(ok)).toBe(false);
+    expect(verifyPassword(ok.ADMIN_PASSWORD, ok)).toBe(true);
+  });
+
+  it("a separate SESSION_SECRET still can't rescue a too-short password from being unusable", () => {
+    const env = { ADMIN_PASSWORD: "short", SESSION_SECRET: "s".repeat(32) };
+    expect(verifyPassword("short", env)).toBe(false);
+  });
+
+  it("a missing password is not 'too short', it is simply not set", () => {
+    expect(isAdminPasswordTooShort({})).toBe(false);
   });
 });
 

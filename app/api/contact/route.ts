@@ -1,7 +1,7 @@
 import { MIN_FILL_MS, contactSchema } from "@/lib/contact";
 import { buildContactEmail } from "@/lib/contact-email";
 import { MailNotConfiguredError, getRecipients, sendMail } from "@/lib/mailer";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { clientIp, isSameOrigin, json, readJson } from "@/lib/request";
 import { SITE } from "@/lib/site";
 import { fieldErrors } from "@/lib/zod-errors";
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return json({ ok: false, message: "That was quick. Please check your message and send it again." }, 400);
   }
 
-  const limit = rateLimit(`contact:${clientIp(request)}`, 5, 10 * 60 * 1000);
+  const limit = await checkRateLimit(`contact:${clientIp(request)}`, 5, 10 * 60 * 1000);
   if (!limit.ok) {
     return json(
       { ok: false, message: "You've sent several messages in a short time. Please wait a few minutes and try again." },
