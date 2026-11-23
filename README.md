@@ -114,8 +114,15 @@ vercel --prod
 
 **The domain's email is hosted on Zoho Mail (MX records), and its nameservers are Wix's.** If you change the *nameservers*, church email stops working. Instead, leave the nameservers alone and edit only two DNS records in Wix:
 
-1. In Vercel: project > **Settings > Domains** > add `www.charlestoncoptic.org` and `charlestoncoptic.org`. Make `www` the primary and let the apex redirect to it (this matches the old site's address). Vercel shows the exact records to create.
-2. In Wix: **Domains > charlestoncoptic.org > Manage DNS records**. Replace the apex `A` records (currently three `185.230.63.x` Wix addresses) with the `A` record Vercel shows, and replace the `www` `CNAME` with the one Vercel shows.
+1. Both domains are already added to the Vercel project: `www.charlestoncoptic.org` is primary and the apex `charlestoncoptic.org` redirects to it (308), matching the old site's address. (Project > **Settings > Domains**.)
+2. In Wix: **Domains > charlestoncoptic.org > Manage DNS records**, and change exactly these:
+
+   | Type | Host | Replace | With |
+   |---|---|---|---|
+   | `A` | `@` (apex) | the three Wix addresses `185.230.63.171`, `.107`, `.186` | `216.198.79.1` and `64.29.17.1` |
+   | `CNAME` | `www` | `cdn3.wixdns.net` | `7e3d20e61c940866.vercel-dns-017.com` |
+
+   These are the values Vercel recommends for this project. (`76.76.21.21` and `cname.vercel-dns.com` also still work.) If Vercel's Domains panel ever shows different values, trust the panel.
 3. **Do not touch** the `MX` records (`mx.zoho.com`, `mx2.zoho.com`, `mx3.zoho.com`) or the Zoho `TXT` record.
 4. Wait for Vercel's domain panel to show a green check, then retire the Wix site plan.
 
